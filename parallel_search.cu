@@ -123,21 +123,18 @@ int main(void) {
 struct node *constructTree(int *data_array, int level) {
     // Construct nodes until we reach maximum depth of tree, then return NULL
     if(level <= levels) {
-        int *next_level = (int *)malloc(sizeof(int)); // Variable of next tree level for each node based off of passed level variable
-        *next_level = level + 1;
-
-        int *children_count = (int *)malloc(sizeof(int)); // Number of node children
+        int children_count; // Number of node children
         if(fully_balanced) {
-            *children_count = max_children; // Always give maximum number of children for a fully-balanced tree
+            children_count = max_children; // Always give maximum number of children for a fully-balanced tree
         }
         else {
-            *children_count = rand() % (max_children + 1); // Give random number of children for a non-fully-balanced tree
+            children_count = rand() % (max_children + 1); // Give random number of children for a non-fully-balanced tree
         }
-        struct node *temp = (struct node *)malloc(sizeof(struct node) + (*children_count * sizeof(struct node *))); // Allocate memory for node based off of number of children
+        struct node *temp = (struct node *)malloc(sizeof(struct node) + (children_count * sizeof(struct node *))); // Allocate memory for node based off of number of children
 
         int i;
-        for(i = 0; i < *children_count; ++i) {
-            temp->children[i] = constructTree(data_array, *next_level); // Construct nodes of children
+        for(i = 0; i < children_count; ++i) {
+            temp->children[i] = constructTree(data_array, level + 1); // Construct nodes of children
             // Check if we are at the end of tree
             if(temp->children[i] != NULL) {
                 data_array[node_count] = rand() % (max_node_value + 1); // Set node data value to a random int between zero and max_node_value
@@ -149,10 +146,6 @@ struct node *constructTree(int *data_array, int level) {
             data_array[node_count] = rand() % (max_node_value + 1);
             temp->data = &(data_array[node_count++]);
         }
-        // Free variables
-        free(children_count);
-        free(next_level);
-
         return temp; // Return created node
     }
     else {
