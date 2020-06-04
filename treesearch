@@ -1,0 +1,108 @@
+#!/bin/bash
+
+Help()
+{
+    echo "Usage: treesearch [options]"
+    echo
+    echo "Options:"
+    echo "========"
+    echo "-m, --method {serial (default) | parallel}            search method to use."
+    echo "-l, --levels (default=19)                             level depth of tree, cannot be negative or float."
+    echo "-c, --children (default=2)                            maximum number of children a node can have, cannot be negative or float."
+    echo "-v, --value (default=1999)                            maximum data value that can be stored in a node, cannot be negative or float."
+    echo "-b, --fully-balanced                                  generate a fully-balanced tree instead of a random one."
+    echo
+    echo "Example:"
+    echo "========"
+    echo "search --method parallel --levels 20 --balanced"
+}
+
+##############################################################################################
+
+UNKNOWNS=()
+METHOD="serial"
+LEVELS=19
+CHILDREN=2
+VALUE=1999
+BALANCED=0
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -m|--method)
+    if [[ "$2" == "parallel" || "$2" == "serial" ]]; then
+        METHOD="$2"
+        shift
+        shift
+    else
+        echo "invalid value for argument ${key}"
+        exit 1
+    fi
+    ;;
+    -l|--levels)
+    if [[ "$2" =~ ^[0-9]+$ && "$2" -ge 0 ]]; then
+        LEVELS="$2"
+        shift
+        shift
+    else
+        echo "invalid value for argument ${key}"
+        exit 1
+    fi
+    ;;
+    -c|--children)
+    if [[ "$2" =~ ^[0-9]+$ && "$2" -ge 0 ]]; then
+        CHILDREN="$2"
+        shift
+        shift
+    else
+        echo "invalid value for argument ${key}"
+        exit 1
+    fi
+    ;;
+    -v|--value)
+    if [[ "$2" =~ ^[0-9]+$ && "$2" -ge 0 ]]; then
+        VALUE="$2"
+        shift
+        shift
+    else
+        echo "invalid value for argument ${key}"
+        exit 1
+    fi
+    ;;
+    -b|--fully-balanced)
+    BALANCED=1
+    shift
+    ;;
+    -h|--help)
+    Help
+    exit 0
+    ;;
+    *)
+    UNKNOWNS+=("$1") # save it in an array for later
+    shift
+    ;;
+esac
+done
+# if any argument is unrecognised, print it and exit script
+if [[ ${#UNKNOWNS[@]} -ne 0 ]]; then
+    echo "The following arguments are not recognised:"
+    for unknown in "${UNKNOWNS[@]}"
+    do
+        echo "$unknown"
+    done
+    exit 1
+fi
+# run program based off of specified method
+case $METHOD in
+    parallel)
+    ./bin/parallel $LEVELS $CHILDREN $VALUE $BALANCED
+    ;;
+    serial)
+    ./bin/serial $LEVELS $CHILDREN $VALUE $BALANCED
+    ;;
+    *)
+    echo "invalid value for method argument"
+    exit 1
+    ;;
+esac
